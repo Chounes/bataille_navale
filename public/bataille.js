@@ -3,9 +3,9 @@ document.addEventListener("DOMContentLoaded", function() {
     let sock = io.connect();
     let gridPlace= document.querySelectorAll("p");
     //Top grid for other player
-    gridPlace[0].after(creatHtmlGrid(10, "P2"));
+    gridPlace[0].after(creatHtmlGrid( "P2"));
     //bot grid for you <3
-    gridPlace[1].after(creatHtmlGrid(10,"P1"));
+    gridPlace[1].after(creatHtmlGrid("P1"));
 });
 
 //Global variables for boat size
@@ -14,6 +14,8 @@ var contreTorpilleur = 0;
 var sousMarin = 0;
 var cuiRasse = 0;
 var porteAvions = 0;
+//Global variable for grid size
+var grid_size = 10;
 
 //maj number of boat
 function majBoatNb(step, _class){
@@ -40,6 +42,25 @@ function majBoatNb(step, _class){
 
 }
 
+//return true if there is already cell with this type of boat on map
+function hasAlreadyOne(){
+    if(!getBoatClass().localeCompare('lancetorpilles')){
+        return lanceTorpilles;
+    }
+    else if(!getBoatClass().localeCompare('contretorpilleur')){
+        return contreTorpilleur;
+    }
+    else if(!getBoatClass().localeCompare('sousmarin')){
+        return sousMarin;
+    }
+    else if(!getBoatClass().localeCompare('cuirasse')){
+        return cuiRasse;
+    }
+    else if(!getBoatClass().localeCompare('porteavions')){
+        return porteAvions;
+    }
+}
+
 //get value of radio buttons
 function getBoatClass(){
     let inputs = document.getElementsByTagName('input');
@@ -53,34 +74,73 @@ function getBoatClass(){
 }
 
 //Check if boat can be set
+function availableBoatPosition(element){
+    if(hasAlreadyOne() == 0)return true;
+    //check element x y-1
+    let pos;
+    let element_test;
+
+    pos = String.fromCharCode(element.id[0].charCodeAt()-1)+element.id[1];
+    if(pos[0].charCodeAt()>= 'A'.charCodeAt()){
+        element_test = document.getElementById(pos);
+        if(element_test.classList.length != 0 && !getBoatClass().localeCompare(element_test.classList[0]))return true;
+    }
+
+    //check element x y+1
+    pos = String.fromCharCode(element.id[0].charCodeAt()+1)+element.id[1];
+    if(pos[0].charCodeAt()<= 'J'.charCodeAt()){
+        element_test = document.getElementById(pos);
+        if(element_test.classList.length != 0  && !getBoatClass().localeCompare(element_test.classList[0]))return true;
+    }
+
+    //check element x-1 y
+    pos = element.id[0]+String(element.id[1]-1);
+    if(pos[1]>=1){
+        element_test = document.getElementById(pos);
+        if(element_test.classList.length != 0  && !getBoatClass().localeCompare(element_test.classList[0]))return true;
+    }
+
+    //check element x+1 y
+    pos = element.id[0]+String(Number(element.id[1])+1);
+    if(pos[1]<=10){
+        element_test = document.getElementById(pos);
+        if(element_test.classList.length != 0  && !getBoatClass().localeCompare(element_test.classList[0]))return true;
+    }
+    return false;
+}
 
 
 
 //set color on cell
 function colorizeGridCells(element){
-    console.log(element.id);
     if(element.classList.length>0 && !getBoatClass().localeCompare(element.classList[0])){
         majBoatNb(-1, getBoatClass());
         element.removeAttribute('class');
+        return true
     }
     else if(element.classList.length>0){
         alert("Attention cette case est déjà occupée");
+        return false
     }
     else{
-        element.classList.add(getBoatClass());
-        majBoatNb(1,getBoatClass());
-
+        if(availableBoatPosition(element)){
+            element.classList.add(getBoatClass());
+            majBoatNb(1,getBoatClass());
+        }
+        else{
+            return false;
+        }
     }
 }
 
 //Create play grid with click event to add boats
-function creatHtmlGrid(size, player){
+function creatHtmlGrid(player){
     let table = document.createElement('table');
     table.id = player;
     let body = document.createElement('tbody');
-    for(let i =0; i<= size; ++i){
+    for(let i =0; i<= grid_size; ++i){
         let tr = document.createElement('tr');
-        for(let j =0; j <= size; ++j){
+        for(let j =0; j <= grid_size; ++j){
             let td = document.createElement('td');
             if(i == 0 && j != 0){
                 td.append(j);
