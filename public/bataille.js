@@ -43,7 +43,7 @@ function majBoatNb(step, _class){
 }
 
 //return true if there is already cell with this type of boat on map
-function hasAlreadyOne(){
+function numberOfOne(){
     if(!getBoatClass().localeCompare('lancetorpilles')){
         return lanceTorpilles;
     }
@@ -61,6 +61,24 @@ function hasAlreadyOne(){
     }
 }
 
+function availableBoatSize(){
+    if(!getBoatClass().localeCompare('lancetorpilles')){
+        return (lanceTorpilles<2);
+    }
+    else if(!getBoatClass().localeCompare('contretorpilleur')){
+        return (contreTorpilleur<3);
+    }
+    else if(!getBoatClass().localeCompare('sousmarin')){
+        return (sousMarin<3);
+    }
+    else if(!getBoatClass().localeCompare('cuirasse')){
+        return (cuiRasse<4);
+    }
+    else if(!getBoatClass().localeCompare('porteavions')){
+        return (porteAvions<5);
+    }
+}
+
 //get value of radio buttons
 function getBoatClass(){
     let inputs = document.getElementsByTagName('input');
@@ -75,38 +93,220 @@ function getBoatClass(){
 
 //Check if boat can be set
 function availableBoatPosition(element){
-    if(hasAlreadyOne() == 0)return true;
+    if(numberOfOne() == 0)return true;
     //check element x y-1
     let pos;
     let element_test;
 
-    pos = String.fromCharCode(element.id[0].charCodeAt()-1)+element.id[1];
+    //check element x y-1
+    //if number is between 1 and 9
+    if(String(Number(element.id[1])+element.id[2]).localeCompare("10")){
+        pos = String.fromCharCode(element.id[0].charCodeAt()-1)+element.id[1];
+    }
+    else{
+        pos = String.fromCharCode(element.id[0].charCodeAt()-1)+10;
+    }
     if(pos[0].charCodeAt()>= 'A'.charCodeAt()){
         element_test = document.getElementById(pos);
-        if(element_test.classList.length != 0 && !getBoatClass().localeCompare(element_test.classList[0]))return true;
+        if(element_test !== null && !getBoatClass().localeCompare(element_test.classList[0])){
+            //check if there is more than 1 other part of boat
+            if(numberOfOne()>1){
+                //if number is between 1 and 9
+                if(String(Number(element.id[1])+element.id[2]).localeCompare("10")){
+                    pos = String.fromCharCode(element.id[0].charCodeAt()-2)+element.id[1];
+                }
+                else{
+                    pos = String.fromCharCode(element.id[0].charCodeAt()-2)+element.id[1]+element.id[2];
+                }
+                element_test = document.getElementById(pos);
+                console.log(pos);
+                if(element_test != null && element_test.classList != undefined){
+                    if(!getBoatClass().localeCompare(element_test.classList[0]))return true;
+                }
+            }
+            else{
+                return true;
+            }
+        }
     }
 
     //check element x y+1
-    pos = String.fromCharCode(element.id[0].charCodeAt()+1)+element.id[1];
+    //if number is between 1 and 9
+    if(String(Number(element.id[1])+element.id[2]).localeCompare("10")){
+        pos = String.fromCharCode(element.id[0].charCodeAt()+1)+element.id[1];
+    }
+    else{
+        pos = String.fromCharCode(element.id[0].charCodeAt()+1)+10;
+    }
     if(pos[0].charCodeAt()<= 'J'.charCodeAt()){
         element_test = document.getElementById(pos);
-        if(element_test.classList.length != 0  && !getBoatClass().localeCompare(element_test.classList[0]))return true;
+        if(element_test !== null && !getBoatClass().localeCompare(element_test.classList[0])){
+            //check if there is more than 1 other part of boat
+            if(numberOfOne()>1){
+                //if number is between 1 and 9
+                if(String(Number(element.id[1])+element.id[2]).localeCompare("10")){
+                    pos = String.fromCharCode(element.id[0].charCodeAt()+2)+element.id[1];
+                }
+                else{
+                    pos = String.fromCharCode(element.id[0].charCodeAt()+2)+element.id[1]+element.id[2];
+                }
+                element_test = document.getElementById(pos);
+                console.log(pos);
+                if(element_test != null && element_test.classList != undefined){
+                    if(!getBoatClass().localeCompare(element_test.classList[0]))return true;
+                }
+            }
+            else{
+                return true;
+            }
+        }
     }
 
     //check element x-1 y
-    pos = element.id[0]+String(element.id[1]-1);
+    //if number is between 1 and 9
+    if(String(Number(element.id[1])+element.id[2]).localeCompare("10")){
+        pos = element.id[0]+String(element.id[1]-1);
+    }
+    else{
+        pos = element.id[0]+9;
+    }
     if(pos[1]>=1){
         element_test = document.getElementById(pos);
-        if(element_test.classList.length != 0  && !getBoatClass().localeCompare(element_test.classList[0]))return true;
+        if(element_test !== null && !getBoatClass().localeCompare(element_test.classList[0])){
+            //check if there is more than 1 other part of boat
+            if(numberOfOne()>1){
+                //if number is between 1 and 9
+                if(String(Number(element.id[1])+element.id[2]).localeCompare("10")){
+                    pos = element.id[0]+String(element.id[1]-2);
+                }
+                else{
+                    pos = element.id[0]+8;
+                }
+                element_test = document.getElementById(pos);
+                console.log(pos);
+                if(element_test != null && element_test.classList != undefined){
+                    if(!getBoatClass().localeCompare(element_test.classList[0]))return true;
+                }
+            }
+            else{
+                return true;
+            }
+        }
     }
 
     //check element x+1 y
-    pos = element.id[0]+String(Number(element.id[1])+1);
+    //if number is between 1 and 9
+    if(String(Number(element.id[1])+element.id[2]).localeCompare("10")){
+        pos = element.id[0]+String(Number(element.id[1])+1);
+    }
+    else{
+        pos = element.id[0]+11;
+    }
     if(pos[1]<=10){
         element_test = document.getElementById(pos);
-        if(element_test.classList.length != 0  && !getBoatClass().localeCompare(element_test.classList[0]))return true;
+        if(element_test !== null && !getBoatClass().localeCompare(element_test.classList[0])){
+            //check if there is more than 1 other part of boat
+            if(numberOfOne()>1){
+                //if number is between 1 and 8
+                if(String(Number(element.id[1])+element.id[2]).localeCompare("10") && Number(element.id[1])<8){
+                    pos = element.id[0]+String(Number(element.id[1])+2);
+                }
+                else{
+                    pos = element.id[0]+Number(10+(-8+Number(element.id[1])));
+                }
+                element_test = document.getElementById(pos);
+                console.log(pos);
+                if(element_test != null && element_test.classList != undefined){
+                    if(!getBoatClass().localeCompare(element_test.classList[0]))return true;
+                }
+
+            }
+            else{
+                return true;
+            }
+        }
     }
+    alert("La nouvelle partie du bateau doit être adjacente et dans la même direction que les parties déjà posées.");
     return false;
+}
+
+function canRemoveCell(element){
+    //Don't create a void if less than 3 cells
+    if(numberOfOne() < 0)return true;
+    //check element x y-1
+    let pos;
+    let element_test;
+    let cells_around = 0;
+
+    //Check horizontal cells
+
+    //check element x-1 y
+    //if number is between 1 and 9
+    if(String(Number(element.id[1])+element.id[2]).localeCompare("10")){
+        pos = element.id[0]+String(element.id[1]-1);
+    }
+    else{
+        pos = element.id[0]+9;
+    }
+    if(pos[1]>=1){
+        element_test = document.getElementById(pos);
+        if(element_test !== null && !getBoatClass().localeCompare(element_test.classList[0])){
+            ++cells_around;
+        }
+    }
+
+    //check element x+1 y
+    //if number is between 1 and 9
+    if(String(Number(element.id[1])+element.id[2]).localeCompare("10")){
+        pos = element.id[0]+String(Number(element.id[1])+1);
+    }
+    else{
+        pos = element.id[0]+11;
+    }
+    if(pos[1]<=10){
+        element_test = document.getElementById(pos);
+        if(element_test !== null && !getBoatClass().localeCompare(element_test.classList[0])){
+           ++cells_around;
+        }
+    }
+
+    //check if there is 2 cells around
+    if(cells_around == 2)return false;
+    cells_around =0;
+
+    //check vertical cells
+    //check element x y-1
+    //if number is between 1 and 9
+    if(String(Number(element.id[1])+element.id[2]).localeCompare("10")){
+        pos = String.fromCharCode(element.id[0].charCodeAt()-1)+element.id[1];
+    }
+    else{
+        pos = String.fromCharCode(element.id[0].charCodeAt()-1)+10;
+    }
+    if(pos[0].charCodeAt()>= 'A'.charCodeAt()){
+        element_test = document.getElementById(pos);
+        if(element_test !== null && !getBoatClass().localeCompare(element_test.classList[0])){
+           ++cells_around;
+        }
+    }
+
+    //check element x y+1
+    //if number is between 1 and 9
+    if(String(Number(element.id[1])+element.id[2]).localeCompare("10")){
+        pos = String.fromCharCode(element.id[0].charCodeAt()+1)+element.id[1];
+    }
+    else{
+        pos = String.fromCharCode(element.id[0].charCodeAt()+1)+10;
+    }
+    if(pos[0].charCodeAt()<= 'J'.charCodeAt()){
+        element_test = document.getElementById(pos);
+        if(element_test !== null && !getBoatClass().localeCompare(element_test.classList[0])){
+            ++cells_around;
+        }
+    }
+    //check if there is 2 cells around
+    if(cells_around == 2)return false;
+    return true;
 }
 
 
@@ -114,15 +314,22 @@ function availableBoatPosition(element){
 //set color on cell
 function colorizeGridCells(element){
     if(element.classList.length>0 && !getBoatClass().localeCompare(element.classList[0])){
-        majBoatNb(-1, getBoatClass());
-        element.removeAttribute('class');
-        return true
+        if(canRemoveCell(element)){
+            majBoatNb(-1, getBoatClass());
+            element.removeAttribute('class');
+            return true
+        }
+        alert("Impossible de retirer cette patie du bateau.")
     }
     else if(element.classList.length>0){
-        alert("Attention cette case est déjà occupée");
+        alert("Attention cette case est déjà occupée.");
         return false
     }
     else{
+        if(!availableBoatSize()){
+            alert("Attention vous avez déjà déposé toutes les parties de ce bateau.");
+            return false;
+        }
         if(availableBoatPosition(element)){
             element.classList.add(getBoatClass());
             majBoatNb(1,getBoatClass());
@@ -160,4 +367,3 @@ function creatHtmlGrid(player){
     table.append(body);
     return table;
 }
-
