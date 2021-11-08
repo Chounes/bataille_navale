@@ -1,11 +1,7 @@
 document.addEventListener("DOMContentLoaded", function() {
     // socket ouverte vers le serveur
     let sock = io.connect();
-    let gridPlace= document.querySelectorAll("p");
-    //Top grid for other player
-    gridPlace[0].after(creatHtmlGrid( "P2"));
-    //bot grid for you <3
-    gridPlace[1].after(creatHtmlGrid("P1"));
+    initGame(sock);
 });
 
 //Global variables for boat size
@@ -119,7 +115,6 @@ function availableBoatPosition(element){
                     pos = String.fromCharCode(element.id[0].charCodeAt()-2)+element.id[1]+element.id[2];
                 }
                 element_test = document.getElementById(pos);
-                console.log(pos);
                 if(element_test != null && element_test.classList != undefined){
                     if(!getBoatClass().localeCompare(element_test.classList[0]))return true;
                 }
@@ -151,7 +146,6 @@ function availableBoatPosition(element){
                     pos = String.fromCharCode(element.id[0].charCodeAt()+2)+element.id[1]+element.id[2];
                 }
                 element_test = document.getElementById(pos);
-                console.log(pos);
                 if(element_test != null && element_test.classList != undefined){
                     if(!getBoatClass().localeCompare(element_test.classList[0]))return true;
                 }
@@ -183,7 +177,6 @@ function availableBoatPosition(element){
                     pos = element.id[0]+8;
                 }
                 element_test = document.getElementById(pos);
-                console.log(pos);
                 if(element_test != null && element_test.classList != undefined){
                     if(!getBoatClass().localeCompare(element_test.classList[0]))return true;
                 }
@@ -215,7 +208,6 @@ function availableBoatPosition(element){
                     pos = element.id[0]+Number(10+(-8+Number(element.id[1])));
                 }
                 element_test = document.getElementById(pos);
-                console.log(pos);
                 if(element_test != null && element_test.classList != undefined){
                     if(!getBoatClass().localeCompare(element_test.classList[0]))return true;
                 }
@@ -340,6 +332,20 @@ function colorizeGridCells(element){
     }
 }
 
+
+//check if game can start
+function can_start(sock){
+    //chek if all boats have maximal size
+    /*if(lanceTorpilles == 2 && contreTorpilleur == 3 && sousMarin == 3 && cuiRasse == 4 && porteAvions == 5){
+            return true;
+    }
+    else{
+        alert("Le remplissage de la grille n'est pas fini.");
+        return false;
+    }*/
+
+}
+
 //Create play grid with click event to add boats
 function creatHtmlGrid(player){
     let table = document.createElement('table');
@@ -366,4 +372,15 @@ function creatHtmlGrid(player){
     }
     table.append(body);
     return table;
+}
+
+function initGame(socket){
+    let gridPlace= document.querySelectorAll("p");
+    //Top grid for other player
+    gridPlace[0].after(creatHtmlGrid( "P2"));
+    //bot grid for you
+    gridPlace[1].after(creatHtmlGrid("P1"));
+    let st_button = document.getElementById("btnDemarrer");
+    console.log(st_button);
+    st_button.addEventListener("click", ()=>can_start(socket));
 }
