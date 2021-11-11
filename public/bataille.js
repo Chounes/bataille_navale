@@ -1,77 +1,68 @@
+class Boat_Team{
+    lanceTorpilles =[];
+    contreTorpilleur =[];
+    sousMarin =[];
+    cuiRasse =[];
+    porteAvion =[];
+
+}
+//Global variables for boat size
+const lanceTorpillesSize = 2;
+const contreTorpilleurSize = 3;
+const sousMarinSize = 3;
+const cuirasseSize = 4;
+const porteAvionsSize = 5;
+
 document.addEventListener("DOMContentLoaded", function() {
     // socket ouverte vers le serveur
     let sock = io.connect();
     initGame(sock);
+
+    sock.emit("demarrer", "test");
+    sock.on("erreur", function(msg) {
+        alert("socket reussie !");
+        alert(msg);
+    });
+
+
 });
+var boat_P1 = new Boat_Team();
 
-//Global variables for boat size
-var lanceTorpilles = 0;
-var contreTorpilleur = 0;
-var sousMarin = 0;
-var cuiRasse = 0;
-var porteAvions = 0;
-//Global variable for grid size
-var grid_size = 10;
-
-//maj number of boat
-function majBoatNb(step, _class){
-    if(!_class.localeCompare('lancetorpilles')){
-        lanceTorpilles += step;
-    }
-    else if(!_class.localeCompare('contretorpilleur')){
-        contreTorpilleur += step;
-    }
-    else if(!_class.localeCompare('sousmarin')){
-        sousMarin += step;
-    }
-    else if(!_class.localeCompare('cuirasse')){
-        cuiRasse += step;
-    }
-    else if(!_class.localeCompare('porteavions')){
-        porteAvions += step;
-    }
-    console.log("Lance torpilles :"+lanceTorpilles);
-    console.log("Contre torpilleur :"+contreTorpilleur);
-    console.log("Sous-marin :"+sousMarin);
-    console.log("Cuirassé :"+cuiRasse);
-    console.log("Porte avions :"+porteAvions+"\n\n\n\n\n\n");
-
-}
 
 //return true if there is already cell with this type of boat on map
 function numberOfOne(){
     if(!getBoatClass().localeCompare('lancetorpilles')){
-        return lanceTorpilles;
+        return boat_P1.lanceTorpilles.length;
     }
     else if(!getBoatClass().localeCompare('contretorpilleur')){
-        return contreTorpilleur;
+        return boat_P1.contreTorpilleur.length;
     }
     else if(!getBoatClass().localeCompare('sousmarin')){
-        return sousMarin;
+        return boat_P1.sousMarin.length;
     }
     else if(!getBoatClass().localeCompare('cuirasse')){
-        return cuiRasse;
+        return boat_P1.cuiRasse.length;
     }
     else if(!getBoatClass().localeCompare('porteavions')){
-        return porteAvions;
+        return boat_P1.porteAvion.length;
     }
 }
 
 function availableBoatSize(){
     if(!getBoatClass().localeCompare('lancetorpilles')){
-        return (lanceTorpilles<2);
+        return (boat_P1.lanceTorpilles.length<lanceTorpillesSize);
     }
     else if(!getBoatClass().localeCompare('contretorpilleur')){
-        return (contreTorpilleur<3);
+        return (boat_P1.contreTorpilleur.length<contreTorpilleurSize);
     }
     else if(!getBoatClass().localeCompare('sousmarin')){
-        return (sousMarin<3);
+        return (boat_P1.sousMarin.length<sousMarinSize);
     }
     else if(!getBoatClass().localeCompare('cuirasse')){
-        return (cuiRasse<4);
+        return (boat_P1.cuiRasse.length<cuirasseSize);
     }
     else if(!getBoatClass().localeCompare('porteavions')){
-        return (porteAvions<5);
+        return (boat_P1.porteAvion.length<porteAvionsSize);
     }
 }
 
@@ -218,7 +209,7 @@ function availableBoatPosition(element){
             }
         }
     }
-    alert("La nouvelle partie du bateau doit être adjacente et dans la même direction que les parties déjà posées.");
+    alert("La nouvelle partie du bateau doit Ãªtre adjacente et dans la mÃªme direction que les parties dÃ©jÃ  posÃ©es.");
     return false;
 }
 
@@ -258,7 +249,7 @@ function canRemoveCell(element){
     if(pos[1]<=10){
         element_test = document.getElementById(pos);
         if(element_test !== null && !getBoatClass().localeCompare(element_test.classList[0])){
-           ++cells_around;
+            ++cells_around;
         }
     }
 
@@ -278,7 +269,7 @@ function canRemoveCell(element){
     if(pos[0].charCodeAt()>= 'A'.charCodeAt()){
         element_test = document.getElementById(pos);
         if(element_test !== null && !getBoatClass().localeCompare(element_test.classList[0])){
-           ++cells_around;
+            ++cells_around;
         }
     }
 
@@ -301,14 +292,72 @@ function canRemoveCell(element){
     return true;
 }
 
+function removeCell(element){
+    if(!getBoatClass().localeCompare('lancetorpilles')){
+        for(let i=0; i< boat_P1.lanceTorpilles.length; ++i){
+            if(boat_P1.lanceTorpilles[i][0]== element.dataset.x_coord && boat_P1.lanceTorpilles[i][1]== element.dataset.y_coord){
+                boat_P1.lanceTorpilles.splice(boat_P1.lanceTorpilles.indexOf(i)-1,1);
+            }
+        }
+    }
+    else if(!getBoatClass().localeCompare('contretorpilleur')){
+        for(let i=0; i< boat_P1.contreTorpilleur.length; ++i){
+            if(boat_P1.contreTorpilleur[i][0]== element.dataset.x_coord && boat_P1.contreTorpilleur[i][1]== element.dataset.y_coord){
+                boat_P1.contreTorpilleur.splice(boat_P1.contreTorpilleur.indexOf(i)-1,1);
+            }
+        }
+    }
+    else if(!getBoatClass().localeCompare('sousmarin')){
+        for(let i=0; i< boat_P1.sousMarin.length; ++i){
+            if(boat_P1.sousMarin[i][0]== element.dataset.x_coord && boat_P1.sousMarin[i][1]== element.dataset.y_coord){
+                boat_P1.sousMarin.splice(boat_P1.sousMarin.indexOf(i)-1,1);
+            }
+        }
+    }
+    else if(!getBoatClass().localeCompare('cuirasse')){
+        for(let i=0; i< boat_P1.cuiRasse.length; ++i){
+            if(boat_P1.cuiRasse[i][0]== element.dataset.x_coord && boat_P1.cuiRasse[i][1]== element.dataset.y_coord){
+                boat_P1.cuiRasse.splice(boat_P1.cuiRasse.indexOf(i)-1,1);
+            }
+        }
+    }
+    else if(!getBoatClass().localeCompare('porteavions')){
+        for(let i=0; i< boat_P1.porteAvion.length; ++i){
+            if(boat_P1.porteAvion[i][0]== element.dataset.x_coord && boat_P1.porteAvion[i][1]== element.dataset.y_coord){
+                boat_P1.porteAvion.splice(boat_P1.porteAvion.indexOf(i)-1,1);
+            }
+        }
+    }
+    element.removeAttribute('class');
+}
+
+function addBoat(element){
+    let pos = [element.dataset.x_coord,element.dataset.y_coord];
+
+    if(!getBoatClass().localeCompare('lancetorpilles')){
+        boat_P1.lanceTorpilles.push(pos);
+    }
+    else if(!getBoatClass().localeCompare('contretorpilleur')){
+        boat_P1.contreTorpilleur.push(pos);
+    }
+    else if(!getBoatClass().localeCompare('sousmarin')){
+        boat_P1.sousMarin.push(pos);
+    }
+    else if(!getBoatClass().localeCompare('cuirasse')){
+        boat_P1.cuiRasse.push(pos);
+    }
+    else if(!getBoatClass().localeCompare('porteavions')){
+        boat_P1.porteAvion.push(pos);
+    }
+    element.classList.add(getBoatClass());
+}
 
 
 //set color on cell
 function colorizeGridCells(element){
     if(element.classList.length>0 && !getBoatClass().localeCompare(element.classList[0])){
-        if(canRemoveCell(element)){
-            majBoatNb(-1, getBoatClass());
-            element.removeAttribute('class');
+        if(/*canRemoveCell(element)*/true){
+            removeCell(element);
             return true
         }
         alert("Impossible de retirer cette patie du bateau.")
@@ -319,12 +368,11 @@ function colorizeGridCells(element){
     }
     else{
         if(!availableBoatSize()){
-            alert("Attention vous avez déjà déposé toutes les parties de ce bateau.");
+            alert("Attention vous avez déjà  disposé toutes les parties de ce bateau.");
             return false;
         }
-        if(availableBoatPosition(element)){
-            element.classList.add(getBoatClass());
-            majBoatNb(1,getBoatClass());
+        if(/*availableBoatPosition(element)*/true){
+            addBoat(element);
         }
         else{
             return false;
@@ -351,9 +399,9 @@ function creatHtmlGrid(player){
     let table = document.createElement('table');
     table.id = player;
     let body = document.createElement('tbody');
-    for(let i =0; i<= grid_size; ++i){
+    for(let i =0; i<= 10; ++i){
         let tr = document.createElement('tr');
-        for(let j =0; j <= grid_size; ++j){
+        for(let j =0; j <= 10; ++j){
             let td = document.createElement('td');
             if(i == 0 && j != 0){
                 td.append(j);
@@ -363,7 +411,8 @@ function creatHtmlGrid(player){
             }
             if(i!=0 && j!=0 && player.localeCompare("P2")){
                 //Each game cell has for id by its position on the grid
-                td.id = String.fromCharCode('A'.charCodeAt() + (i-1))+j;
+                td.dataset.x_coord = j;
+                td.dataset.y_coord = i;
                 td.addEventListener('click',()=>colorizeGridCells(td));
             }
             tr.append(td);
