@@ -1,3 +1,9 @@
+//Reste à faire
+/*
+- Affichage des msg comme il faut
+- Affichage sur les cases en fonction de resultats
+ */
+
 class Boat_Team{
     lanceTorpilles =[];
     contreTorpilleur =[];
@@ -12,16 +18,17 @@ const sousMarinSize = 3;
 const cuirasseSize = 4;
 const porteAvionsSize = 5;
 
-var partyStart;
+var canPlay;
+var partyStarted;
 //local storage
 function save () {
     localStorage.setItem('GRID', JSON.stringify(boat_P1));
 }
+//socket
+var socket = io.connect();
 
 document.addEventListener("DOMContentLoaded", function() {
-    // socket ouverte vers le serveur
-    let sock = io.connect();
-    initGame(sock);
+    initGame();
 });
 var boat_P1 = new Boat_Team();
 
@@ -67,7 +74,7 @@ function availableBoatSize(){
 function getBoatClass(){
     let inputs = document.getElementsByTagName('input');
     for(let i = 0; i < inputs.length; i++) {
-        if(inputs[i].type == 'radio'){
+        if(inputs[i].type === 'radio'){
             if(inputs[i].checked){
                 return inputs[i].value;
             }
@@ -77,7 +84,7 @@ function getBoatClass(){
 
 //Check if boat can be set
 function availableBoatPosition(element){
-    if(numberOfOne() == 0)return true;
+    if(numberOfOne() === 0)return true;
 
     if(!getBoatClass().localeCompare('lancetorpilles')){
         return canPosBoat(element, boat_P1.lanceTorpilles);
@@ -100,25 +107,25 @@ function availableBoatPosition(element){
 
 function canPosBoat(e, boat){
     for(let i=0; i<boat.length;++i){
-        if(boat[i][0]-1== e.dataset.x_coord && boat[i][1]== e.dataset.y_coord){
+        if(boat[i][0]-1=== e.dataset.x_coord && boat[i][1]=== e.dataset.y_coord){
             if(boat.length>1){
                 return checkOnSameLine(boat, [e.dataset.x_coord, e.dataset.y_coord]);
             }
             return true;
         }
-        else if(boat[i][0]== e.dataset.x_coord-1 && boat[i][1]== e.dataset.y_coord){
+        else if(boat[i][0]=== e.dataset.x_coord-1 && boat[i][1]=== e.dataset.y_coord){
             if(boat.length>1){
                 return checkOnSameLine(boat, [e.dataset.x_coord, e.dataset.y_coord]);
             }
             return true;
         }
-        else if(boat[i][0]== e.dataset.x_coord && boat[i][1]== e.dataset.y_coord-1){
+        else if(boat[i][0]=== e.dataset.x_coord && boat[i][1]=== e.dataset.y_coord-1){
             if(boat.length>1){
                 return checkOnSameLine(boat, [e.dataset.x_coord, e.dataset.y_coord]);
             }
             return true;
         }
-        else if(boat[i][0]== e.dataset.x_coord && boat[i][1]-1== e.dataset.y_coord){
+        else if(boat[i][0]=== e.dataset.x_coord && boat[i][1]-1=== e.dataset.y_coord){
             if(boat.length>1){
                 return checkOnSameLine(boat, [e.dataset.x_coord, e.dataset.y_coord]);
             }
@@ -130,14 +137,14 @@ function canPosBoat(e, boat){
 }
 
 function checkOnSameLine(boat,newPos){
-    if(boat[0][0] == boat[1][0]){
-        if(newPos[0] != boat[0][0]){
+    if(boat[0][0] === boat[1][0]){
+        if(newPos[0] !== boat[0][0]){
             alert("La nouvelle partie du bateau doit être adjacente et dans la même direction que les parties déjà  posées.");
             return false;
         }
     }
-    else if(boat[0][1] == boat[1][1]){
-        if(newPos[1] != boat[0][1]){
+    else if(boat[0][1] === boat[1][1]){
+        if(newPos[1] !== boat[0][1]){
             alert("La nouvelle partie du bateau doit être adjacente et dans la même direction que les parties déjà  posées.");
             return false;
         }
@@ -168,16 +175,16 @@ function canRemoveCell(element){
 function canRemoveBoat(e, boat){
     let nbBoatAround =0;
     for(let i=0; i<boat.length;++i){
-        if(boat[i][0]-1== e.dataset.x_coord && boat[i][1]== e.dataset.y_coord){
+        if(boat[i][0]-1=== e.dataset.x_coord && boat[i][1]=== e.dataset.y_coord){
             ++nbBoatAround;
         }
-        else if(boat[i][0]== e.dataset.x_coord-1 && boat[i][1]== e.dataset.y_coord){
+        else if(boat[i][0]=== e.dataset.x_coord-1 && boat[i][1]=== e.dataset.y_coord){
             ++nbBoatAround;
         }
-        else if(boat[i][0]== e.dataset.x_coord && boat[i][1]== e.dataset.y_coord-1){
+        else if(boat[i][0]=== e.dataset.x_coord && boat[i][1]=== e.dataset.y_coord-1){
             ++nbBoatAround;
         }
-        else if(boat[i][0]== e.dataset.x_coord && boat[i][1]-1== e.dataset.y_coord){
+        else if(boat[i][0]=== e.dataset.x_coord && boat[i][1]-1=== e.dataset.y_coord){
             ++nbBoatAround;
         }
     }
@@ -187,35 +194,35 @@ function canRemoveBoat(e, boat){
 function removeCell(element){
     if(!getBoatClass().localeCompare('lancetorpilles')){
         for(let i=0; i< boat_P1.lanceTorpilles.length; ++i){
-            if(boat_P1.lanceTorpilles[i][0]== element.dataset.x_coord && boat_P1.lanceTorpilles[i][1]== element.dataset.y_coord){
+            if(boat_P1.lanceTorpilles[i][0]=== element.dataset.x_coord && boat_P1.lanceTorpilles[i][1]=== element.dataset.y_coord){
                 boat_P1.lanceTorpilles.splice(i,1);
             }
         }
     }
     else if(!getBoatClass().localeCompare('contretorpilleur')){
         for(let i=0; i< boat_P1.contreTorpilleur.length; ++i){
-            if(boat_P1.contreTorpilleur[i][0]== element.dataset.x_coord && boat_P1.contreTorpilleur[i][1]== element.dataset.y_coord){
+            if(boat_P1.contreTorpilleur[i][0]=== element.dataset.x_coord && boat_P1.contreTorpilleur[i][1]=== element.dataset.y_coord){
                 boat_P1.contreTorpilleur.splice(i,1);
             }
         }
     }
     else if(!getBoatClass().localeCompare('sousmarin')){
         for(let i=0; i< boat_P1.sousMarin.length; ++i){
-            if(boat_P1.sousMarin[i][0]== element.dataset.x_coord && boat_P1.sousMarin[i][1]== element.dataset.y_coord){
+            if(boat_P1.sousMarin[i][0]=== element.dataset.x_coord && boat_P1.sousMarin[i][1]=== element.dataset.y_coord){
                 boat_P1.sousMarin.splice(i,1);
             }
         }
     }
     else if(!getBoatClass().localeCompare('cuirasse')){
         for(let i=0; i< boat_P1.cuiRasse.length; ++i){
-            if(boat_P1.cuiRasse[i][0]== element.dataset.x_coord && boat_P1.cuiRasse[i][1]== element.dataset.y_coord){
+            if(boat_P1.cuiRasse[i][0]=== element.dataset.x_coord && boat_P1.cuiRasse[i][1]=== element.dataset.y_coord){
                 boat_P1.cuiRasse.splice(i,1);
             }
         }
     }
     else if(!getBoatClass().localeCompare('porteavions')){
         for(let i=0; i< boat_P1.porteAvion.length; ++i){
-            if(boat_P1.porteAvion[i][0]== element.dataset.x_coord && boat_P1.porteAvion[i][1]== element.dataset.y_coord){
+            if(boat_P1.porteAvion[i][0]=== element.dataset.x_coord && boat_P1.porteAvion[i][1]=== element.dataset.y_coord){
                 boat_P1.porteAvion.splice(i,1);
             }
         }
@@ -247,49 +254,89 @@ function addBoat(element){
 
 //set color on cell
 function colorizeGridCells(element){
-    if(element.classList.length>0 && !getBoatClass().localeCompare(element.classList[0])){
-        if(canRemoveCell(element)){
-            removeCell(element);
-            save();
-            return true
+    if(!partyStarted){
+        if(element.classList.length>0 && !getBoatClass().localeCompare(element.classList[0])){
+            if(canRemoveCell(element)){
+                removeCell(element);
+                save();
+                return true
+            }
+            alert("Impossible de retirer cette patie du bateau.")
         }
-        alert("Impossible de retirer cette patie du bateau.")
-    }
-    else if(element.classList.length>0){
-        alert("Attention cette case est déjà occupée.");
-        return false
-    }
-    else{
-        if(!availableBoatSize()){
-            alert("Attention vous avez déjà  disposé toutes les parties de ce bateau.");
-            return false;
-        }
-        if(availableBoatPosition(element)){
-            addBoat(element);
-            save();
-            return true;
+        else if(element.classList.length>0){
+            alert("Attention cette case est déjà occupée.");
+            return false
         }
         else{
-            return false;
+            if(!availableBoatSize()){
+                alert("Attention vous avez déjà  disposé toutes les parties de ce bateau.");
+                return false;
+            }
+            if(availableBoatPosition(element)){
+                addBoat(element);
+                save();
+                return true;
+            }
+            else{
+                return false;
+            }
         }
     }
-
 }
 
 
 //check if game can start
-function can_start(sock){
-
-    sock.emit("demarrer", formatBoatObject());
-    sock.on("erreur", function(msg) {
-        alert("socket reussie !");
+function can_start(){
+    partyStarted =true;
+    socket.emit("demarrer", formatBoatObject());
+    socket.on("erreur", function(msg) {
         alert(msg);
+        partyStarted =false;
     });
+    if(partyStarted){
+        setScreenToPlay();
+        initSocketAction();
+    }
+}
 
+function setScreenToPlay(){
+    let e =document.getElementsByTagName('label');
+    for(let i =0; i<e.length; ++i){
+        e[i].style.display ="none";
+    }
+    document.getElementById("btnDemarrer").style.display = "none";
+    let footer = document.getElementsByTagName("footer");
+    for(let i =0; i<footer.length; ++i){
+        footer[i].style.display ="block";
+    }
+    document.getElementById("btnEnvoyer").addEventListener("click", ()=>sendMsg());
+}
+
+function sendMsg(){
+    let txtArea = document.getElementById("txtMsg");
+    socket.emit("message", txtArea.value);
+    printMsg(txtArea.value, "moi");
+    txtArea.value ='';
+}
+
+function printMsg(msg,classe){
+    if(isHTML(msg))return;
+    let date = new Date();
+    let who;
+    if(!classe.localeCompare("moi")) who ="Message envoyé à votre adversaire";
+    else if(!classe.localeCompare("adversaire")) who ="Message de votre adversaire";
+    else who ="";
+    msg = ""+date.getHours()+":"+date.getMinutes()+":"+date.getSeconds()+" - "+who+" : "+msg+"";
+    let p_element = document.createElement('p');
+    p_element.classList.add(classe);
+    p_element.append(msg);
+    let chat = document.getElementsByTagName("aside");
+    chat = chat[0];
+    chat.append(p_element);
 }
 
 function formatBoatObject(){
-    let boatFormated = {
+    let boatFormatted = {
         lancetorpilles :[],
         contretorpilleur :[],
         sousmarin :[],
@@ -298,29 +345,29 @@ function formatBoatObject(){
     }
     for(let i =0; i<boat_P1.lanceTorpilles.length; ++i){
         let pos = ""+String.fromCharCode('A'.charCodeAt()+Number(boat_P1.lanceTorpilles[i][1]-1))+""+boat_P1.lanceTorpilles[i][0];
-        boatFormated.lancetorpilles.push(pos);
+        boatFormatted.lancetorpilles.push(pos);
     }
     for(let i =0; i<boat_P1.contreTorpilleur.length; ++i){
         let pos = ""+String.fromCharCode('A'.charCodeAt()+Number(boat_P1.contreTorpilleur[i][1]-1))+""+boat_P1.contreTorpilleur[i][0];
-        boatFormated.contretorpilleur.push(pos);
+        boatFormatted.contretorpilleur.push(pos);
     }
     for(let i =0; i<boat_P1.sousMarin.length; ++i){
         let pos = ""+String.fromCharCode('A'.charCodeAt()+Number(boat_P1.sousMarin[i][1]-1))+""+boat_P1.sousMarin[i][0];
-        boatFormated.sousmarin.push(pos);
+        boatFormatted.sousmarin.push(pos);
     }
     for(let i =0; i<boat_P1.cuiRasse.length; ++i){
         let pos = ""+String.fromCharCode('A'.charCodeAt()+Number(boat_P1.cuiRasse[i][1]-1))+""+boat_P1.cuiRasse[i][0];
-        boatFormated.cuirasse.push(pos);
+        boatFormatted.cuirasse.push(pos);
     }
     for(let i =0; i<boat_P1.porteAvion.length; ++i){
         let pos = ""+String.fromCharCode('A'.charCodeAt()+Number(boat_P1.porteAvion[i][1]-1))+""+boat_P1.porteAvion[i][0];
-        boatFormated.porteavions.push(pos);
+        boatFormatted.porteavions.push(pos);
     }
-    return boatFormated;
+    return boatFormatted;
 }
 
 //Create play grid with click event to add boats
-function creatHtmlGrid(player, socket){
+function creatHtmlGrid(player){
     let table = document.createElement('table');
     table.id = player;
     let body = document.createElement('tbody');
@@ -328,13 +375,14 @@ function creatHtmlGrid(player, socket){
         let tr = document.createElement('tr');
         for(let j =0; j <= 10; ++j){
             let td = document.createElement('td');
-            if(i == 0 && j != 0){
+            if(i === 0 && j !== 0){
                 td.append(j);
             }
-            if(i != 0 && j == 0){
+            if(i !== 0 && j === 0){
                 td.append(String.fromCharCode('A'.charCodeAt() + (i-1)));
             }
-            if(i!=0 && j!=0 && player.localeCompare("P2")){
+            //grid for P1
+            if(i!==0 && j!==0 && player.localeCompare("P2")){
                 //Each game cell has for id by its position on the grid
                 td.dataset.x_coord = j;
                 td.dataset.y_coord = i;
@@ -342,13 +390,15 @@ function creatHtmlGrid(player, socket){
                     setSavedBoat(td);
                 }
                 td.addEventListener('click',()=>colorizeGridCells(td));
+                td.id = String.fromCharCode('A'.charCodeAt() + (i-1))+j;
             }
-            if(i!=0 && j!=0 && !player.localeCompare("P2")){
+            //grid for P2
+            if(i!==0 && j!==0 && !player.localeCompare("P2")){
                 //Each game cell has for id by its position on the grid
                 td.dataset.x_coord = j;
                 td.dataset.y_coord = i;
-                td.addEventListener('click',()=>tir(td, socket));
-
+                td.addEventListener('click',()=>tir(td));
+                td.id = "P2"+String.fromCharCode('A'.charCodeAt() + (i-1))+j;
             }
             tr.append(td);
         }
@@ -358,20 +408,53 @@ function creatHtmlGrid(player, socket){
     return table;
 }
 
-function initGame(socket){
+function initGame(){
+    partyStarted =false;
     let tmp = localStorage.getItem('GRID');
     if(tmp){
         boat_P1 = JSON.parse(tmp);
     }
     let gridPlace= document.querySelectorAll("p");
     //Top grid for other player
-    gridPlace[0].after(creatHtmlGrid( "P2", socket));
+    gridPlace[0].after(creatHtmlGrid( "P2"));
 
     //bot grid for you
-    gridPlace[1].after(creatHtmlGrid("P1", socket));
+    gridPlace[1].after(creatHtmlGrid("P1"));
 
     let st_button = document.getElementById("btnDemarrer");
-    st_button.addEventListener("click", ()=>can_start(socket));
+    st_button.addEventListener("click", ()=>can_start());
+}
+
+function initSocketAction(){
+    socket.on("message", function(msg){
+        printMsg(msg, "adversaire");
+    });
+    socket.on("a_toi", function (msg){
+        printMsg(msg,"serveur");
+        canPlay =true;
+    })
+    socket.on("a_l_autre", function (msg){
+        printMsg(msg,"serveur");
+        canPlay =false;
+    })
+    socket.on("en_attente", function (msg){
+        printMsg(msg, "serveur");
+    });
+    socket.on("en_attente", function (msg){
+        printMsg(msg, "serveur");
+    });
+    socket.on("resultat", function (msg){
+        //si émetteur
+        if(msg.emetteur){
+            //alterne les tours
+            canPlay =false;
+        }
+        //sinon
+        else{
+            //alterne les tours
+            canPlay=true;
+        }
+    })
 }
 
 function p1BoatNotEmpty(){
@@ -379,8 +462,8 @@ function p1BoatNotEmpty(){
     if(boat_P1.contreTorpilleur >0)return true;
     if(boat_P1.sousMarin >0)return true;
     if(boat_P1.cuiRasse >0)return true;
-    if(boat_P1.porteAvion >0)return true;
-    return false;
+    return boat_P1.porteAvion > 0;
+
 }
 
 function setSavedBoat(e){
@@ -411,7 +494,24 @@ function setSavedBoat(e){
     }
 }
 
-function tir(e, socket){
-    let pos = ""+String.fromCharCode('A'.charCodeAt()+Number(e.dataset.y_coord-1))+""+e.dataset.x_coord;
-    socket.emit("tir", pos);
+function tir(e){
+    if(canPlay){
+        let pos = ""+String.fromCharCode('A'.charCodeAt()+Number(e.dataset.y_coord-1))+""+e.dataset.x_coord;
+        socket.emit("tir", pos);
+        e.classList.add("tir")
+    }
+    else{
+        alert("Ce n'est pas à votre tour de jouer.");
+    }
+}
+
+function isHTML(str) {
+    let a = document.createElement('div');
+    a.innerHTML = str;
+
+    for (var c = a.childNodes, i = c.length; i--; ) {
+        if (c[i].nodeType == 1) return true;
+    }
+
+    return false;
 }
