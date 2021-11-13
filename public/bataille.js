@@ -1,7 +1,7 @@
 //Reste à faire
 /*
 - Affichage des msg comme il faut
-- Affichage sur les cases en fonction de resultats
+-setscreen on grille validé
  */
 
 class Boat_Team{
@@ -18,7 +18,6 @@ const sousMarinSize = 3;
 const cuirasseSize = 4;
 const porteAvionsSize = 5;
 
-var canPlay;
 var partyStarted;
 //local storage
 function save () {
@@ -26,6 +25,21 @@ function save () {
 }
 //socket
 var socket = io.connect();
+
+socket.on("a_toi", function (msg){
+    printMsg(msg,"serveur");
+    setScreenToPlay();
+    partyStarted=true;
+})
+
+socket.on("a_l_autre", function (msg){
+    printMsg(msg,"serveur");
+    partyStarted=true;
+})
+socket.on("en_attente", function (msg){
+    printMsg(msg, "serveur");
+    partyStarted=true;
+});
 
 document.addEventListener("DOMContentLoaded", function() {
     initGame();
@@ -107,25 +121,25 @@ function availableBoatPosition(element){
 
 function canPosBoat(e, boat){
     for(let i=0; i<boat.length;++i){
-        if(boat[i][0]-1=== e.dataset.x_coord && boat[i][1]=== e.dataset.y_coord){
+        if(boat[i][0]-1== e.dataset.x_coord && boat[i][1]== e.dataset.y_coord){
             if(boat.length>1){
                 return checkOnSameLine(boat, [e.dataset.x_coord, e.dataset.y_coord]);
             }
             return true;
         }
-        else if(boat[i][0]=== e.dataset.x_coord-1 && boat[i][1]=== e.dataset.y_coord){
+        else if(boat[i][0]== e.dataset.x_coord-1 && boat[i][1]== e.dataset.y_coord){
             if(boat.length>1){
                 return checkOnSameLine(boat, [e.dataset.x_coord, e.dataset.y_coord]);
             }
             return true;
         }
-        else if(boat[i][0]=== e.dataset.x_coord && boat[i][1]=== e.dataset.y_coord-1){
+        else if(boat[i][0]== e.dataset.x_coord && boat[i][1]== e.dataset.y_coord-1){
             if(boat.length>1){
                 return checkOnSameLine(boat, [e.dataset.x_coord, e.dataset.y_coord]);
             }
             return true;
         }
-        else if(boat[i][0]=== e.dataset.x_coord && boat[i][1]-1=== e.dataset.y_coord){
+        else if(boat[i][0]== e.dataset.x_coord && boat[i][1]-1== e.dataset.y_coord){
             if(boat.length>1){
                 return checkOnSameLine(boat, [e.dataset.x_coord, e.dataset.y_coord]);
             }
@@ -287,15 +301,13 @@ function colorizeGridCells(element){
 
 //check if game can start
 function can_start(){
-    partyStarted =true;
     socket.emit("demarrer", formatBoatObject());
     socket.on("erreur", function(msg) {
         alert(msg);
-        partyStarted =false;
     });
     if(partyStarted){
-        setScreenToPlay();
         initSocketAction();
+        setScreenToPlay();
     }
 }
 
@@ -408,55 +420,100 @@ function creatHtmlGrid(player){
     return table;
 }
 
+//Init la partie
 function initGame(){
-    partyStarted =false;
+    partyStarted =false; //passera a true quand les bateaux bien placés seront et le bouton start pressé
     let tmp = localStorage.getItem('GRID');
     if(tmp){
         boat_P1 = JSON.parse(tmp);
     }
     let gridPlace= document.querySelectorAll("p");
-    //Top grid for other player
+    //Grille du haut pour le joueur 2
     gridPlace[0].after(creatHtmlGrid( "P2"));
 
-    //bot grid for you
+    //Grille du bas pour le joueur 1
     gridPlace[1].after(creatHtmlGrid("P1"));
 
     let st_button = document.getElementById("btnDemarrer");
     st_button.addEventListener("click", ()=>can_start());
 }
 
+//Init les différentes action liée au messages envoyé par le socket
 function initSocketAction(){
     socket.on("message", function(msg){
         printMsg(msg, "adversaire");
     });
-    socket.on("a_toi", function (msg){
-        printMsg(msg,"serveur");
-        canPlay =true;
-    })
-    socket.on("a_l_autre", function (msg){
-        printMsg(msg,"serveur");
-        canPlay =false;
-    })
-    socket.on("en_attente", function (msg){
-        printMsg(msg, "serveur");
-    });
-    socket.on("en_attente", function (msg){
-        printMsg(msg, "serveur");
-    });
-    socket.on("resultat", function (msg){
+
+
+    //Message
+    socket.on("resultat", function (res){
+        console.log(res);
         //si émetteur
-        if(msg.emetteur){
-            //alterne les tours
-            canPlay =false;
+        if(res.emetteur){
+            //Ajoute croix sur case visé
+            document.getElementById("P2"+res.coords).classList.add("tir")
+            if(res.statut ===0){
+                //Plouf
+                let msg = "[Vous] Tir en "+res.coords+" : dans l'eau";
+                printMsg(msg, "serveur");
+            }
+            else if(res.statut ===1){
+                //touché
+                let msg = "[Vous] Tir en "+res.coords+" : touché";
+                printMsg(msg, "serveur");
+                //colorie cell de la grille adverse
+                document.getElementById("P2"+res.coords).classList.add("touche");
+            }
+            else if(res.statut ===2){
+                //coulé
+                let msg = "[Vous] Tir en "+res.coords+" : coulé";
+                printMsg(msg, "serveur");
+                //colorie cell de la grille adverse
+                document.getElementById("P2"+res.coords).classList.add("touche");
+            }
+            else if(res.statut ===3){
+                //win
+                let msg = "[Vous] Tir en "+res.coords+" : coulé";
+                printMsg(msg, "serveur");
+                //colorie cell de la grille adverse
+                document.getElementById("P2"+res.coords).classList.add("touche");
+                alert("Bravo tu as gagné !!");
+            }
         }
         //sinon
         else{
-            //alterne les tours
-            canPlay=true;
+            //Ajoute croix sur case visé
+            document.getElementById(res.coords).classList.add("tir");
+
+            if(res.statut ===0){
+                //Plouf
+                let msg = "[Adversaire] Tir en "+res.coords+" : dans l'eau";
+                printMsg(msg, "serveur");
+            }
+            else if(res.statut ===1){
+                //touché
+                let msg = "[Adversaire] Tir en "+res.coords+" : touché";
+                printMsg(msg, "serveur");
+                //colorie cell de la grille adverse
+            }
+            else if(res.statut ===2){
+                //coulé
+                let msg = "[Adversaire] Tir en "+res.coords+" : coulé";
+                printMsg(msg, "serveur");
+                //colorie cell de la grille adverse
+            }
+            else if(res.statut ===3){
+                //win
+                let msg = "[Adversaire] Tir en "+res.coords+" : coulé";
+                printMsg(msg, "serveur");
+                //colorie cell de la grille adverse
+                alert("Dommage tu as perdu...");
+            }
         }
     })
 }
 
+//Vérifie si l'objet boat_P1 est vide
 function p1BoatNotEmpty(){
     if(boat_P1.lanceTorpilles.length >0)return true;
     if(boat_P1.contreTorpilleur >0)return true;
@@ -466,6 +523,8 @@ function p1BoatNotEmpty(){
 
 }
 
+
+//Place les bateaux sauvegardé sur la case e
 function setSavedBoat(e){
     for(let i =0; i<boat_P1.lanceTorpilles.length; ++i){
         if(boat_P1.lanceTorpilles[i][0] === e.dataset.x_coord && boat_P1.lanceTorpilles[i][1] === e.dataset.y_coord){
@@ -494,23 +553,20 @@ function setSavedBoat(e){
     }
 }
 
+//Envoie un tir au socket avec les coords de la case e
 function tir(e){
-    if(canPlay){
-        let pos = ""+String.fromCharCode('A'.charCodeAt()+Number(e.dataset.y_coord-1))+""+e.dataset.x_coord;
-        socket.emit("tir", pos);
-        e.classList.add("tir")
-    }
-    else{
-        alert("Ce n'est pas à votre tour de jouer.");
-    }
+    //refait les coords en version [lettre,Nombre] à partir de coordonnées [Nombre, Nombre]
+    let pos = ""+String.fromCharCode('A'.charCodeAt()+Number(e.dataset.y_coord-1))+""+e.dataset.x_coord;
+    socket.emit("tir", pos);
 }
 
+//Vérifie si il n'y a pas de balise html dans une string str
 function isHTML(str) {
     let a = document.createElement('div');
     a.innerHTML = str;
 
-    for (var c = a.childNodes, i = c.length; i--; ) {
-        if (c[i].nodeType == 1) return true;
+    for (let c = a.childNodes, i = c.length; i--; ) {
+        if (c[i].nodeType === 1) return true;
     }
 
     return false;
