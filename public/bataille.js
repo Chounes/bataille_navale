@@ -4,6 +4,8 @@
 -setscreen on grille validé
  */
 
+
+
 class Boat_Team{
     lanceTorpilles =[];
     contreTorpilleur =[];
@@ -25,21 +27,6 @@ function save () {
 }
 //socket
 var socket = io.connect();
-
-socket.on("a_toi", function (msg){
-    printMsg(msg,"serveur");
-    setScreenToPlay();
-    partyStarted=true;
-})
-
-socket.on("a_l_autre", function (msg){
-    printMsg(msg,"serveur");
-    partyStarted=true;
-})
-socket.on("en_attente", function (msg){
-    printMsg(msg, "serveur");
-    partyStarted=true;
-});
 
 document.addEventListener("DOMContentLoaded", function() {
     initGame();
@@ -302,10 +289,32 @@ function colorizeGridCells(element){
 //check if game can start
 function can_start(){
     socket.emit("demarrer", formatBoatObject());
-    socket.on("erreur", function(msg) {
-        alert(msg);
+    socket.on("a_toi", function (msg){
+        printMsg(msg,"serveur");
+        partyStarted =true;
+    })
+
+    socket.on("a_l_autre", function (msg){
+        printMsg(msg,"serveur");
+        partyStarted =true;
+    })
+    socket.on("en_attente", function (msg){
+        printMsg(msg, "serveur");
+        partyStarted =true;
+
     });
-    if(partyStarted){
+
+    socket.on("error", function (msg){
+        if(!msg.localeCompare("La grille envoyée n'est pas dans le bon format.")){
+            partyStarted = false;
+        }
+        alert(msg);
+
+    });
+
+
+
+    if(partyStarted == 1){
         initSocketAction();
         setScreenToPlay();
     }
@@ -443,7 +452,6 @@ function initSocketAction(){
     socket.on("message", function(msg){
         printMsg(msg, "adversaire");
     });
-
 
     //Message
     socket.on("resultat", function (res){

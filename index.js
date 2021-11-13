@@ -248,7 +248,7 @@ io.on('connection', function (socket) {
         console.log("Déconnexion d'un client");
         if (index >= 0 && parties[partie]) {
             console.log("Fin de la partie (abandon)");
-            parties[partie].joueurs[1 - index].socket.emit("deconnexion", "Victoire par abandon. L'adversaire s'est déconnecté.");
+            if(parties[partie].joueurs[1-index])parties[partie].joueurs[1 - index].socket.emit("deconnexion", "Victoire par abandon. L'adversaire s'est déconnecté.");
             supprimerPartie(partie);
         }
     });
